@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Concatenator", "Concatenato
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ListBox", "ListBox\ListBox.vcxproj", "{A0E4B454-5638-44B9-84B6-991D585F523F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MainWindow", "MainWindow\MainWindow.vcxproj", "{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -61,6 +63,14 @@ Global
 		{A0E4B454-5638-44B9-84B6-991D585F523F}.Release|x64.Build.0 = Release|x64
 		{A0E4B454-5638-44B9-84B6-991D585F523F}.Release|x86.ActiveCfg = Release|Win32
 		{A0E4B454-5638-44B9-84B6-991D585F523F}.Release|x86.Build.0 = Release|Win32
+		{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}.Debug|x64.ActiveCfg = Debug|x64
+		{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}.Debug|x64.Build.0 = Debug|x64
+		{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}.Debug|x86.ActiveCfg = Debug|Win32
+		{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}.Debug|x86.Build.0 = Debug|Win32
+		{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}.Release|x64.ActiveCfg = Release|x64
+		{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}.Release|x64.Build.0 = Release|x64
+		{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}.Release|x86.ActiveCfg = Release|Win32
+		{4BAD80D9-97C8-4F8C-8C74-7BA9659F752D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
