@@ -1,4 +1,6 @@
-﻿#include <Windows.h>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <Windows.h>
+#include <cstdio>
 #include "resource.h"
 
 CONST CHAR g_sz_WINDOW_CLASS[] = "My first window"; 
@@ -51,8 +53,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		WS_OVERLAPPEDWINDOW,				//Такой стиль задается главному окну, он определяет 
 											//что у окна будет строка заголовка, кнопки управления
 											//окном, масштабируемая граница
-		start_x,							//Положение окна на экране по X
-		start_y,							//Положение окна на экране по Y
+		start_x,							//Положение левого верхнего угла окна на экране по X
+		start_y,							//Положение левого верхнего угла окна на экране по Y
 		w.right - w.left,					//Ширина окна
 		w.bottom - w.top,					//Высота окна
 		NULL,								//Родительское окно
@@ -79,6 +81,18 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_CREATE:
+		break;
+	case WM_SIZE:
+	case WM_MOVING:
+	{
+		CONST INT SIZE = 256;
+		CHAR sz_title[SIZE]{};
+		RECT rect;
+		GetWindowRect(hwnd, &rect);
+		sprintf(sz_title, "%s Position: %ix%i, Size: %ix%i", g_sz_WINDOW_CLASS, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+
+		SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)sz_title);
+	}
 		break;
 	case WM_COMMAND:
 		break;
