@@ -59,15 +59,15 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		g_sz_WINDOW_CLASS,					//Class name
 		g_sz_WINDOW_CLASS,					//Заголовок окна
 		WS_OVERLAPPEDWINDOW,				//Такой стиль задается главному окну, он определяет 
-											//что у окна будет строка заголовка, кнопки управления
-											//окном, масштабируемая граница
+		//что у окна будет строка заголовка, кнопки управления
+		//окном, масштабируемая граница
 		start_x,							//Положение левого верхнего угла окна на экране по X
 		start_y,							//Положение левого верхнего угла окна на экране по Y
 		w.right - w.left,					//Ширина окна
 		w.bottom - w.top,					//Высота окна
 		NULL,								//Родительское окно
 		NULL,								//Для главного окна этот параметр задает меню, а для
-											//дочернего окна - ID-ресурса дочернего окна (IDC_BUTTON, IDC_EDIT и т.д.)
+		//дочернего окна - ID-ресурса дочернего окна (IDC_BUTTON, IDC_EDIT и т.д.)
 		hInstance,
 		NULL
 	);
@@ -89,41 +89,54 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_CREATE:
+	{
 		InitCommonControls();
 		g_hwndTrackingTT = CreateTrackingTooltip(IDC_TOOLTIP, hwnd, NULL);
-		return TRUE;
+		CreateWindowEx(NULL, "Button", "Показать координаты мыши", WS_CHILD | WS_VISIBLE | BS_CHECKBOX | WS_TABSTOP,
+			20, 20, 250, 35, hwnd, (HMENU)(IDC_CHECKBOX), GetModuleHandle(NULL), NULL);
+		CreateWindowEx(NULL, STATUSCLASSNAME, "Status bar", WS_CHILD | WS_VISIBLE | WS_BORDER | SBARS_SIZEGRIP,
+			0, 0, 0, 0,
+			hwnd, (HMENU)(IDM_STATUSBAR), GetModuleHandle(NULL), NULL);
+	}
+	return TRUE;
 	case WM_MOUSELEAVE:
 		SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, FALSE, (LPARAM)&g_toolItem);
 		g_trackingMouse = FALSE;
 		return FALSE;
 	case WM_MOUSEMOVE:
-		static INT oldX, oldY;
-		INT newX, newY;
-		if (!g_trackingMouse)
+		if (SendMessage(GetDlgItem(hwnd, IDC_CHECKBOX), BM_GETCHECK, 0, 0) == BST_CHECKED)
 		{
-			TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT) };
-			tme.hwndTrack = hwnd;
-			tme.dwFlags = TME_LEAVE;
-			TrackMouseEvent(&tme);
-			SendMessage(g_hwndTrackingTT, TTM_ACTIVATE, (WPARAM)TRUE, (LPARAM)&g_toolItem);
-			g_trackingMouse = TRUE;
-		}
-		newX = GET_X_LPARAM(lParam);
-		newY = GET_Y_LPARAM(lParam);
+			static INT oldX, oldY;
+			INT newX, newY;
+			if (!g_trackingMouse)
+			{
+				TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT) };
+				tme.hwndTrack = hwnd;
+				tme.dwFlags = TME_LEAVE;
+				TrackMouseEvent(&tme);
+				SendMessage(g_hwndTrackingTT, TTM_ACTIVATE, (WPARAM)TRUE, (LPARAM)&g_toolItem);
+				g_trackingMouse = TRUE;
+			}
+			newX = GET_X_LPARAM(lParam);
+			newY = GET_Y_LPARAM(lParam);
 
-		if ((newX != oldX) || (newY != oldY))
-		{
-			oldX = newX;
-			oldY = newY;
-			CHAR coords[12]{};
-			sprintf(coords, "%ix%i", newX, newY);
-			g_toolItem.lpszText = (LPSTR)coords;
-			SendMessage(g_hwndTrackingTT, TTM_SETTOOLINFO, 0, (LPARAM)&g_toolItem);
-			POINT pt = { newX, newY };
-			ClientToScreen(hwnd, &pt);
-			SendMessage(g_hwndTrackingTT, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(newX + 10, newY - 20));
+			if ((newX != oldX) || (newY != oldY))
+			{
+				oldX = newX;
+				oldY = newY;
+				CHAR coords[12]{};
+				sprintf(coords, "%ix%i", newX, newY);
+				g_toolItem.lpszText = (LPSTR)coords;
+				SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), WM_SETTEXT, 0, (LPARAM)coords);
+				SendMessage(g_hwndTrackingTT, TTM_SETTOOLINFO, 0, (LPARAM)&g_toolItem);
+				POINT pt = { newX, newY };
+				ClientToScreen(hwnd, &pt);
+				SendMessage(g_hwndTrackingTT, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(newX + 10, newY - 20));
+			}
+			return FALSE;
 		}
-		return FALSE;
+		else SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), WM_SETTEXT, 0, (LPARAM)"Status bar");
+		break;
 	case WM_SIZING:
 	case WM_MOVING:
 	{
@@ -132,14 +145,19 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		RECT rect;
 		GetWindowRect(hwnd, &rect);
 		sprintf(sz_title, "%s Position: %ix%i, Size: %ix%i", g_sz_WINDOW_CLASS, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
-
 		SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)sz_title);
+		SetWindowPos(GetDlgItem(hwnd, IDM_STATUSBAR), NULL, 0, 0, 0, 0, SWP_NOMOVE);
+		UpdateWindow(hwnd);
 	}
 	break;
 	case WM_COMMAND:
+		if (IsDlgButtonChecked(hwnd, IDC_CHECKBOX)) CheckDlgButton(hwnd, IDC_CHECKBOX, BST_UNCHECKED);
+		else CheckDlgButton(hwnd, IDC_CHECKBOX, BST_CHECKED);
 		break;
 	case WM_DESTROY: PostQuitMessage(0); break;
-	case WM_CLOSE: DestroyWindow(hwnd); break;
+	case WM_CLOSE:
+		if (MessageBox(hwnd, "Вы действительно хотите выйти?", "Выход", MB_YESNO | MB_ICONINFORMATION) == IDYES) DestroyWindow(hwnd);
+		break;
 	default: return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 	return 0;
