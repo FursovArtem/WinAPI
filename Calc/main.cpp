@@ -3,11 +3,16 @@
 #include <stdio.h>
 #include "resource.h"
 
+#define EXP				g_sz_expr
+#define BEXP			g_sz_buffer_expr
+#define OP				g_sz_operator
+#define LPEXP			(LPARAM)g_sz_expr
+
 CONST CHAR* g_sz_OPERATORS[] = { "+", "-", "*", "/", "<-", "C" };
 CONST INT MYSIZE = 32;
 CHAR g_sz_expr[MYSIZE]{};
 CHAR g_sz_buffer_expr[MYSIZE]{};
-CHAR g_operator[1]{};
+CHAR g_sz_operator[1]{};
 
 CONST CHAR g_sz_CLASSNAME[] = "MyCalc";
 CONST INT g_i_START_X = 10;
@@ -74,11 +79,12 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	HWND hEdit = GetDlgItem(hwnd, IDC_EDIT);
 	switch (uMsg)
 	{
 	case WM_CREATE:
 	{
-		HWND hEdit = CreateWindowEx(NULL, "Edit", "", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT | ES_READONLY,
+		CreateWindowEx(NULL, "Edit", "", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_CENTER | ES_READONLY,
 			g_i_START_X, g_i_START_Y, g_i_DISPLAY_WIDTH, g_i_DISPLAY_HEIGHT,
 			hwnd, (HMENU)IDC_EDIT, GetModuleHandle(NULL), NULL);
 		for (int i = 6; i >= 0; i -= 3)
@@ -115,7 +121,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					hwnd, (HMENU)(IDC_BUTTON_PLUS + i + j), GetModuleHandle(NULL), NULL);
 			}
 		}
-		CreateWindowEx(NULL, "Button", "=", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		CreateWindowEx(NULL, "Button", "=", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_ICON,
 			g_i_BUTTON_START_X + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -137,66 +143,65 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case 0x37: case VK_NUMPAD7: case IDC_BUTTON_7:
 		case 0x38: case VK_NUMPAD8: case IDC_BUTTON_8:
 		case 0x39: case VK_NUMPAD9: case IDC_BUTTON_9:
-			sprintf(g_sz_expr, "%s%i", g_sz_expr, GetNumber(wParam));
-			SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_sz_expr); break;
+			sprintf(EXP, "%s%i", EXP, GetNumber(wParam));
+			SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 		case VK_ADD: case VK_OEM_PLUS: case IDC_BUTTON_PLUS:
 		case VK_SUBTRACT: case VK_OEM_MINUS: case IDC_BUTTON_MINUS:
 		case VK_MULTIPLY: case IDC_BUTTON_ASTER:
 		case VK_DIVIDE: case IDC_BUTTON_SLASH:
-			if (g_sz_expr[0])
+			if (EXP[0])
 			{
-				if (g_sz_expr[strlen(g_sz_expr) - 1] == '.') g_sz_expr[strlen(g_sz_expr) - 1] = '\0';
-				strcpy(g_sz_buffer_expr, g_sz_expr);
-				g_sz_expr[0] = '\0';
-				g_operator[0] = GetOperator(wParam);
-				SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_operator); break;
+				if (EXP[strlen(EXP) - 1] == '.') EXP[strlen(EXP) - 1] = '\0';
+				strcpy(BEXP, EXP);
+				EXP[0] = '\0';
+				OP[0] = GetOperator(wParam);
+				SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)OP); break;
 			}
-			else if (g_operator[0])
+			else if (OP[0])
 			{
-				g_operator[0] = GetOperator(wParam);
-				SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_operator); break;
+				OP[0] = GetOperator(wParam);
+				SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)OP); break;
 			}
 			break;
 		case IDC_BUTTON_CLEAR:
-			g_sz_expr[0] = '\0';
-			SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_sz_expr); break;
+			EXP[0] = '\0';
+			SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 		case VK_BACK: case IDC_BUTTON_BSP:
-			if (g_sz_expr[0]) g_sz_expr[strlen(g_sz_expr) - 1] = '\0';
-			SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_sz_expr); break;
+			if (EXP[0]) EXP[strlen(EXP) - 1] = '\0';
+			SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 		case VK_DECIMAL: case IDC_BUTTON_POINT:
-			if (!strstr(g_sz_expr, "."))
+			if (!strstr(EXP, "."))
 			{
-				if (!g_sz_expr[0])
+				if (!EXP[0])
 				{
-					sprintf(g_sz_expr, "%i%s", 0, ".");
-					SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_sz_expr); break;
+					sprintf(EXP, "%i%s", 0, ".");
+					SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 				}
 				else
 				{
-					sprintf(g_sz_expr, "%s%s", g_sz_expr, ".");
-					SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_sz_expr); break;
+					sprintf(EXP, "%s%s", EXP, ".");
+					SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 				}
 			}
 			break;
 		case VK_RETURN: case IDC_BUTTON_EQUAL:
-			if (g_sz_buffer_expr[0] && g_operator[0] && g_sz_expr[0])
+			if (BEXP[0] && OP[0] && EXP[0])
 			{
-				double left = atof(g_sz_buffer_expr);
-				double right = atof(g_sz_expr);
-				char operation = g_operator[0];
+				double left = atof(BEXP);
+				double right = atof(EXP);
+				char operation = OP[0];
 				CHAR result[MYSIZE]{};
 				sprintf(result, "%f", Calc(left, operation, right));
-
-				strcpy(g_sz_expr, result);
-				SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_sz_expr); break;
+				strcpy(EXP, result);
+				SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 			}
-			else if (g_sz_buffer_expr[0] && g_operator[0])
+			else if (BEXP[0] && OP[0])
 			{
-				g_operator[0] = '\0';
-				strcpy(g_sz_expr, g_sz_buffer_expr);
-				SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_sz_expr); break;
+				OP[0] = '\0';
+				strcpy(EXP, BEXP);
+				SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 			}
-			else SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)g_sz_expr); break;
+			else SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 			break;
 		}
 	}
