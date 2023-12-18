@@ -135,9 +135,15 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			return FALSE;
 		}
-		else SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), WM_SETTEXT, 0, (LPARAM)"Status bar");
+		else if (SendMessage(GetDlgItem(hwnd, IDC_CHECKBOX), BM_GETCHECK, 0, 0) == BST_UNCHECKED)
+		{
+			CHAR text[64]{};
+			SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), WM_GETTEXT, 64, (LPARAM)text);
+			if (strcmp(text, "Status bar")) 
+				SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), WM_SETTEXT, 0, (LPARAM)"Status bar");
+		}
 		break;
-	case WM_SIZING:
+	case WM_SIZE:
 	case WM_MOVING:
 	{
 		CONST INT SIZE = 256;

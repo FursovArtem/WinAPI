@@ -3,12 +3,13 @@
 #include <stdio.h>
 #include "resource.h"
 
-#define EXP				g_sz_expr
-#define BEXP			g_sz_buffer_expr
-#define OP				g_sz_operator
-#define LPEXP			(LPARAM)g_sz_expr
+#define EXP			g_sz_expr
+#define BEXP		g_sz_buffer_expr
+#define OP			g_sz_operator
+#define LPEXP		(LPARAM)g_sz_expr
+#define LPOP		(LPARAM)g_sz_operator
 
-CONST CHAR* g_sz_OPERATORS[] = { "+", "-", "*", "/", "<-", "C" };
+CONST CHAR* g_sz_OPERATORS[] = { "=", "Handler", "+", "-", "*", "/", "<-", "C"};
 CONST INT MYSIZE = 32;
 CHAR g_sz_expr[MYSIZE]{};
 CHAR g_sz_buffer_expr[MYSIZE]{};
@@ -110,24 +111,20 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 			hwnd, (HMENU)(IDC_BUTTON_POINT), GetModuleHandle(NULL), NULL);
 		////////////////////////////
-		for (int i = 4; i >= 0; i -= 2)
+		for (int i = 6; i >= 0; i -= 2)
 		{
 			for (int j = 0; j < 2; j++)
 			{
 				CreateWindowEx(NULL, "Button", g_sz_OPERATORS[i + j], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 					g_i_BUTTON_START_X + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3 + (g_i_BUTTON_SIZE + g_i_INTERVAL) * j,
-					g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (3 - i / 2 - 1),
+					g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (4 - i / 2 - 1),
 					g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
-					hwnd, (HMENU)(IDC_BUTTON_PLUS + i + j), GetModuleHandle(NULL), NULL);
+					hwnd, (HMENU)(IDC_BUTTON_EQUAL + i + j), GetModuleHandle(NULL), NULL);
 			}
 		}
-		CreateWindowEx(NULL, "Button", "=", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-			g_i_BUTTON_START_X + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
-			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
-			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
-			hwnd, (HMENU)(IDC_BUTTON_EQUAL), GetModuleHandle(NULL), NULL);
 	}
 	break;
+	case WM_LBUTTONDOWN: SendMessage(GetFocus(), WM_KILLFOCUS, 0, 0); break;
 	case WM_KEYDOWN:
 	case WM_COMMAND:
 	{
@@ -149,26 +146,44 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case VK_SUBTRACT: case VK_OEM_MINUS: case IDC_BUTTON_MINUS:
 		case VK_MULTIPLY: case IDC_BUTTON_ASTER:
 		case VK_DIVIDE: case IDC_BUTTON_SLASH:
-			if (EXP[0])
+			if (BEXP[0] && OP[0] && EXP[0])										//chain expressions
+			{
+				double left = atof(BEXP);
+				double right = atof(EXP);
+				char operation = OP[0];
+				CHAR result[MYSIZE]{};
+				sprintf(result, "%.20g", Calc(left, operation, right));
+				strcpy(BEXP, result);
+				OP[0] = GetOperator(wParam);
+				EXP[0] = '\0';
+				SendMessage(hEdit, WM_SETTEXT, 0, LPOP); break;
+			}
+			else if (EXP[0])													//default
 			{
 				if (EXP[strlen(EXP) - 1] == '.') EXP[strlen(EXP) - 1] = '\0';
 				strcpy(BEXP, EXP);
 				EXP[0] = '\0';
 				OP[0] = GetOperator(wParam);
-				SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)OP); break;
+				SendMessage(hEdit, WM_SETTEXT, 0, LPOP); break;
 			}
-			else if (OP[0])
+			else if (OP[0])														//change operator
 			{
 				OP[0] = GetOperator(wParam);
-				SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)OP); break;
+				SendMessage(hEdit, WM_SETTEXT, 0, LPOP); break;
 			}
 			break;
 		case IDC_BUTTON_CLEAR:
-			EXP[0] = '\0';
+			BEXP[0] = '\0';
+			OP[0] = '\0';
+			EXP[0] = '\0'; 
 			SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 		case VK_BACK: case IDC_BUTTON_BSP:
-			if (EXP[0]) EXP[strlen(EXP) - 1] = '\0';
-			SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
+			if (EXP[0])
+			{
+				EXP[strlen(EXP) - 1] = '\0';
+				SendMessage(hEdit, WM_SETTEXT, 0, LPEXP);
+			}
+			break;
 		case VK_DECIMAL: case IDC_BUTTON_POINT:
 			if (!strstr(EXP, "."))
 			{
@@ -185,7 +200,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case VK_RETURN: case IDC_BUTTON_EQUAL:
-			if (BEXP[0] && OP[0] && EXP[0])
+			if (BEXP[0] && OP[0] && EXP[0])										//default
 			{
 				double left = atof(BEXP);
 				double right = atof(EXP);
@@ -197,7 +212,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				BEXP[0] = '\0';
 				SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 			}
-			else if (BEXP[0] && OP[0])
+			else if (BEXP[0] && OP[0])											//lack of 2nd operand
 			{
 				OP[0] = '\0';
 				strcpy(EXP, BEXP);
