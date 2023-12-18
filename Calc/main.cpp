@@ -121,7 +121,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					hwnd, (HMENU)(IDC_BUTTON_PLUS + i + j), GetModuleHandle(NULL), NULL);
 			}
 		}
-		CreateWindowEx(NULL, "Button", "=", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_ICON,
+		CreateWindowEx(NULL, "Button", "=", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 			g_i_BUTTON_START_X + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -191,8 +191,10 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				double right = atof(EXP);
 				char operation = OP[0];
 				CHAR result[MYSIZE]{};
-				sprintf(result, "%f", Calc(left, operation, right));
+				sprintf(result, "%.20g", Calc(left, operation, right));
 				strcpy(EXP, result);
+				OP[0] = '\0';
+				BEXP[0] = '\0';
 				SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 			}
 			else if (BEXP[0] && OP[0])
