@@ -124,7 +124,6 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
-	case WM_LBUTTONDOWN: SendMessage(GetFocus(), WM_KILLFOCUS, 0, 0); break;
 	case WM_KEYDOWN:
 	case WM_COMMAND:
 	{
@@ -221,6 +220,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			else SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 			break;
 		}
+		SetFocus(hwnd);
 	}
 	break;
 	case WM_DESTROY: PostQuitMessage(0); break;

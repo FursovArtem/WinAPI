@@ -80,6 +80,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
+		IsDialogMessage(hwnd, &msg);
 	}
 	return msg.wParam;
 }
@@ -94,9 +95,11 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		g_hwndTrackingTT = CreateTrackingTooltip(IDC_TOOLTIP, hwnd, NULL);
 		CreateWindowEx(NULL, "Button", "Показать координаты мыши", WS_CHILD | WS_VISIBLE | BS_CHECKBOX | WS_TABSTOP,
 			20, 20, 250, 35, hwnd, (HMENU)(IDC_CHECKBOX), GetModuleHandle(NULL), NULL);
-		CreateWindowEx(NULL, STATUSCLASSNAME, "Status bar", WS_CHILD | WS_VISIBLE | WS_BORDER | SBARS_SIZEGRIP,
+		HWND hStatus = CreateWindowEx(NULL, STATUSCLASSNAME, "Status bar", WS_CHILD | WS_VISIBLE | WS_BORDER | SBARS_SIZEGRIP,
 			0, 0, 0, 0,
 			hwnd, (HMENU)(IDM_STATUSBAR), GetModuleHandle(NULL), NULL);
+		INT parts[2] = { 64, -1 };
+		SendMessage(hStatus, SB_SETPARTS, 2, (LPARAM)parts);
 	}
 	return TRUE;
 	case WM_MOUSELEAVE:
@@ -127,7 +130,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				CHAR coords[12]{};
 				sprintf(coords, "%ix%i", newX, newY);
 				g_toolItem.lpszText = (LPSTR)coords;
-				SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), WM_SETTEXT, 0, (LPARAM)coords);
+				SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), SB_SETTEXT, 1, (LPARAM)coords);
 				SendMessage(g_hwndTrackingTT, TTM_SETTOOLINFO, 0, (LPARAM)&g_toolItem);
 				POINT pt = { newX, newY };
 				ClientToScreen(hwnd, &pt);
