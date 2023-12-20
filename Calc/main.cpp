@@ -2,19 +2,19 @@
 #include <Windows.h>
 #include <stdio.h>
 #include "resource.h"
+#include "styles.h"
+//#include <CommCtrl.h>
+//#include <Uxtheme.h>
+//#pragma comment (lib, "comctl32")
+//#pragma comment (lib, "uxtheme")
 
-#define EXP			g_sz_expr
-#define BEXP		g_sz_buffer_expr
-#define OP			g_sz_operator
-#define LPEXP		(LPARAM)g_sz_expr
-#define LPOP		(LPARAM)g_sz_operator
+#define EXP				g_sz_expr
+#define BEXP			g_sz_buffer_expr
+#define OP				g_sz_operator
+#define LPEXP			(LPARAM)g_sz_expr
+#define LPOP			(LPARAM)g_sz_operator
 
-CONST CHAR* g_sz_OPERATORS[] = { "=", "Handler", "+", "-", "*", "/", "<-", "C"};
-CONST INT MYSIZE = 32;
-CHAR g_sz_expr[MYSIZE]{};
-CHAR g_sz_buffer_expr[MYSIZE]{};
-CHAR g_sz_operator[1]{};
-
+CONST CHAR* g_sz_OPERATORS[] = { "=", "Handler", "+", "-", "*", "/", "<-", "C" };
 CONST CHAR g_sz_CLASSNAME[] = "MyCalc";
 CONST INT g_i_START_X = 10;
 CONST INT g_i_START_Y = 10;
@@ -29,7 +29,7 @@ CONST INT g_i_BUTTON_START_Y = g_i_START_Y + g_i_DISPLAY_HEIGHT + g_i_INTERVAL;
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT GetNumber(WPARAM wParam);
 CHAR GetOperator(WPARAM wParam);
-DOUBLE Calc(double a, char operation, double b);
+DOUBLE Calc(DOUBLE a, CHAR operation, DOUBLE b);
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
@@ -57,8 +57,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	(
 		NULL, g_sz_CLASSNAME, g_sz_CLASSNAME, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 		CW_USEDEFAULT, CW_USEDEFAULT,
-		g_i_START_X + g_i_DISPLAY_WIDTH + g_i_INTERVAL * 5,
-		g_i_DISPLAY_HEIGHT + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 5,
+		g_i_START_X * 2 + g_i_DISPLAY_WIDTH + 16,
+		g_i_START_Y * 2 + g_i_DISPLAY_HEIGHT + g_i_BUTTON_SIZE * 4 + g_i_INTERVAL * 2 + 49,
 		NULL, NULL, hInstance, NULL
 	);
 	if (hwnd == NULL)
@@ -80,11 +80,22 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	CONST INT MYSIZE = 32;
+	static CHAR g_sz_expr[MYSIZE]{};
+	static CHAR g_sz_buffer_expr[MYSIZE]{};
+	static CHAR g_sz_operator[1]{};
+	static CHAR* g_sz_theme;
 	HWND hEdit = GetDlgItem(hwnd, IDC_EDIT);
+
 	switch (uMsg)
 	{
 	case WM_CREATE:
 	{
+		/*INITCOMMONCONTROLSEX icex;
+		icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+		icex.dwICC = ICC_STANDARD_CLASSES;
+		InitCommonControlsEx(&icex);*/
+
 		CreateWindowEx(NULL, "Edit", "", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_CENTER | ES_READONLY,
 			g_i_START_X, g_i_START_Y, g_i_DISPLAY_WIDTH, g_i_DISPLAY_HEIGHT,
 			hwnd, (HMENU)IDC_EDIT, GetModuleHandle(NULL), NULL);
@@ -94,36 +105,47 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				CHAR sz_digit[2] = "";
 				sz_digit[0] = i + j + 49;
-				CreateWindowEx(NULL, "Button", sz_digit, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+				CreateWindowEx(NULL, "Button", sz_digit, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
 					g_i_BUTTON_START_X + (g_i_BUTTON_SIZE + g_i_INTERVAL) * j,
 					g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (3 - i / 3 - 1),
 					g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 					hwnd, (HMENU)(IDC_BUTTON_1 + i + j), GetModuleHandle(NULL), NULL);
 			}
 		}
-		CreateWindowEx(NULL, "Button", "0", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		CreateWindowEx(NULL, "Button", "0", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
 			g_i_BUTTON_START_X, g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_DOUBLE_SIZE, g_i_BUTTON_SIZE,
 			hwnd, (HMENU)(IDC_BUTTON_0), GetModuleHandle(NULL), NULL);
-		CreateWindowEx(NULL, "Button", ".", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		CreateWindowEx(NULL, "Button", ".", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
 			g_i_BUTTON_START_X + g_i_BUTTON_DOUBLE_SIZE + g_i_INTERVAL,
 			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 			hwnd, (HMENU)(IDC_BUTTON_POINT), GetModuleHandle(NULL), NULL);
-		////////////////////////////
 		for (int i = 6; i >= 0; i -= 2)
 		{
 			for (int j = 0; j < 2; j++)
 			{
-				CreateWindowEx(NULL, "Button", g_sz_OPERATORS[i + j], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+				CreateWindowEx(NULL, "Button", g_sz_OPERATORS[i + j], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
 					g_i_BUTTON_START_X + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3 + (g_i_BUTTON_SIZE + g_i_INTERVAL) * j,
 					g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (4 - i / 2 - 1),
 					g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 					hwnd, (HMENU)(IDC_BUTTON_EQUAL + i + j), GetModuleHandle(NULL), NULL);
 			}
 		}
+		SetTheme(hwnd, DEFAULT, BLACK_BRUSH, EXP, OP);
+		g_sz_theme = (CHAR*)"default";
 	}
 	break;
+	/*case WM_RBUTTONDOWN:
+	{
+		RECT rect;
+		GetClientRect(hwnd, &rect);
+		HMENU hMenu = CreatePopupMenu();
+		AppendMenu(hMenu, MF_ENABLED | MF_SEPARATOR | MF_STRING, IDM_ITEM1, "item");
+		TrackPopupMenuEx(hMenu, TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON | TPM_NOANIMATION |
+			TPM_VERTICAL, rect.right - rect.left / 2, rect.bottom - rect.top / 2, hwnd, NULL);
+	}
+	break;*/
 	case WM_KEYDOWN:
 	case WM_COMMAND:
 	{
@@ -174,7 +196,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_BUTTON_CLEAR:
 			BEXP[0] = '\0';
 			OP[0] = '\0';
-			EXP[0] = '\0'; 
+			EXP[0] = '\0';
 			SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 		case VK_BACK: case IDC_BUTTON_BSP:
 			if (EXP[0])
@@ -219,6 +241,20 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			else SendMessage(hEdit, WM_SETTEXT, 0, LPEXP); break;
 			break;
+		case IDC_BUTTON_HANDLER:
+		{
+			if (g_sz_theme == "default")
+			{
+				SetTheme(hwnd, PURPLE, WHITE_BRUSH, EXP, OP);
+				g_sz_theme = (CHAR*)"purple";
+			}
+			else
+			{
+				SetTheme(hwnd, DEFAULT, BLACK_BRUSH, EXP, OP);
+				g_sz_theme = (CHAR*)"default";
+			}
+		}
+		break;
 		}
 		SetFocus(hwnd);
 	}
@@ -251,7 +287,7 @@ CHAR GetOperator(WPARAM wParam)
 	else if (wParam == VK_DIVIDE || wParam == IDC_BUTTON_SLASH) return '/';
 	else return NULL;
 }
-DOUBLE Calc(double a, char operation, double b)
+DOUBLE Calc(DOUBLE a, CHAR operation, DOUBLE b)
 {
 	switch (operation)
 	{
