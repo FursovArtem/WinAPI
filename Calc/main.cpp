@@ -80,13 +80,14 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	HWND hEdit = GetDlgItem(hwnd, IDC_EDIT);
 	CONST INT MYSIZE = 32;
 	static CHAR g_sz_expr[MYSIZE]{};
 	static CHAR g_sz_buffer_expr[MYSIZE]{};
 	static CHAR g_sz_operator[1]{};
+
 	static CHAR* g_sz_theme;
 	static INT* g_sz_bg;
-	HWND hEdit = GetDlgItem(hwnd, IDC_EDIT);
 
 	switch (uMsg)
 	{
