@@ -102,6 +102,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SendMessage(hStatus, SB_SETPARTS, 2, (LPARAM)parts);
 	}
 	return TRUE;
+	break;
 	case WM_MOUSELEAVE:
 		SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, FALSE, (LPARAM)&g_toolItem);
 		g_trackingMouse = FALSE;
@@ -142,7 +143,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			CHAR text[64]{};
 			SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), WM_GETTEXT, 64, (LPARAM)text);
-			if (strcmp(text, "Status bar")) 
+			if (strcmp(text, "Status bar"))
 				SendMessage(GetDlgItem(hwnd, IDM_STATUSBAR), WM_SETTEXT, 0, (LPARAM)"Status bar");
 		}
 		break;
