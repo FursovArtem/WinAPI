@@ -2,6 +2,10 @@
 // Microsoft Visual C++ generated include file.
 // Used by Resource.rc
 //
+#define CM_CLOSE						200
+#define CM_DEFAULT						201
+#define CM_PURPLE						202
+
 #define IDC_EDIT                        999
 #define IDC_BUTTON_0                    1000
 #define IDC_BUTTON_1                    1001

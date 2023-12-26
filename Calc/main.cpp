@@ -85,6 +85,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	static CHAR g_sz_buffer_expr[MYSIZE]{};
 	static CHAR g_sz_operator[1]{};
 	static CHAR* g_sz_theme;
+	static INT* g_sz_bg;
 	HWND hEdit = GetDlgItem(hwnd, IDC_EDIT);
 
 	switch (uMsg)
@@ -132,20 +133,38 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					hwnd, (HMENU)(IDC_BUTTON_EQUAL + i + j), GetModuleHandle(NULL), NULL);
 			}
 		}
-		SetTheme(hwnd, DEFAULT, BLACK_BRUSH, EXP, OP);
-		g_sz_theme = (CHAR*)"default";
+		SetTheme(hwnd, DEFAULT, BG_BLACK, EXP, OP);
+		g_sz_theme = (CHAR*)DEFAULT;
+		g_sz_bg = (INT*)BG_BLACK;
+		//SetWindowTheme(hwnd, L" ", L" ");
 	}
 	break;
-	/*case WM_RBUTTONDOWN:
+	case WM_CONTEXTMENU:
 	{
-		RECT rect;
-		GetClientRect(hwnd, &rect);
+		CHAR* currentTheme = g_sz_theme;
 		HMENU hMenu = CreatePopupMenu();
-		AppendMenu(hMenu, MF_ENABLED | MF_SEPARATOR | MF_STRING, IDM_ITEM1, "item");
-		TrackPopupMenuEx(hMenu, TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON | TPM_NOANIMATION |
-			TPM_VERTICAL, rect.right - rect.left / 2, rect.bottom - rect.top / 2, hwnd, NULL);
+		HMENU hThemes = CreatePopupMenu();
+		AppendMenu(hMenu, MF_BYPOSITION | MF_POPUP, (UINT_PTR)hThemes, "Themes");
+		AppendMenu(hThemes, MF_BYPOSITION | MF_STRING, CM_DEFAULT, "Default");
+		AppendMenu(hThemes, MF_BYPOSITION | MF_STRING, CM_PURPLE, "Purple");
+		AppendMenu(hMenu, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+		AppendMenu(hMenu, MF_BYPOSITION | MF_STRING, CM_CLOSE, "Close");
+
+		switch (TrackPopupMenuEx(hMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN | TPM_RETURNCMD, LOWORD(lParam), HIWORD(lParam), hwnd, NULL))
+		{
+		case CM_DEFAULT:
+			g_sz_theme = (CHAR*)DEFAULT;
+			g_sz_bg = (INT*)BG_BLACK;
+			break;
+		case CM_PURPLE:
+			g_sz_theme = (CHAR*)PURPLE;
+			g_sz_bg = (INT*)BG_LIGHTPURPLE;
+			break;
+		case CM_CLOSE: DestroyWindow(hwnd); break;
+		}
+		if (currentTheme != g_sz_theme) SetTheme(hwnd, g_sz_theme, g_sz_bg, EXP, OP);
 	}
-	break;*/
+	break;
 	case WM_KEYDOWN:
 	case WM_COMMAND:
 	{
@@ -173,7 +192,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				double right = atof(EXP);
 				char operation = OP[0];
 				CHAR result[MYSIZE]{};
-				sprintf(result, "%.20g", Calc(left, operation, right));
+				sprintf(result, "%g", Calc(left, operation, right));
 				strcpy(BEXP, result);
 				OP[0] = GetOperator(wParam);
 				EXP[0] = '\0';
@@ -227,7 +246,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				double right = atof(EXP);
 				char operation = OP[0];
 				CHAR result[MYSIZE]{};
-				sprintf(result, "%.20g", Calc(left, operation, right));
+				sprintf(result, "%g", Calc(left, operation, right));
 				strcpy(EXP, result);
 				OP[0] = '\0';
 				BEXP[0] = '\0';
@@ -245,12 +264,12 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (g_sz_theme == "default")
 			{
-				SetTheme(hwnd, PURPLE, WHITE_BRUSH, EXP, OP);
+				SetTheme(hwnd, PURPLE, BG_LIGHTPURPLE, EXP, OP);
 				g_sz_theme = (CHAR*)"purple";
 			}
 			else
 			{
-				SetTheme(hwnd, DEFAULT, BLACK_BRUSH, EXP, OP);
+				SetTheme(hwnd, DEFAULT, BG_BLACK, EXP, OP);
 				g_sz_theme = (CHAR*)"default";
 			}
 		}
@@ -260,7 +279,11 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	case WM_DESTROY: PostQuitMessage(0); break;
-	case WM_CLOSE: DestroyWindow(hwnd); break;
+	case WM_CLOSE:
+	{
+		DeleteObject(hfont);
+		DestroyWindow(hwnd);
+	}break;
 	default: return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 	return FALSE;
