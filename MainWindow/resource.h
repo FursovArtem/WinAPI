@@ -6,6 +6,7 @@
 #define IDC_TOOLTIP                     1000
 #define IDC_CHECKBOX					1001
 #define IDM_STATUSBAR					1002
+#define IDC_ROUND_BUTTON				1003
 
 // Next default values for new objects
 // 

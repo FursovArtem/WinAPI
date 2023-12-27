@@ -4,6 +4,7 @@
 #include <windowsx.h>
 #include <stdio.h>
 #include <CommCtrl.h>
+#include <atlimage.h>
 #include "resource.h"
 
 CONST CHAR g_sz_WINDOW_CLASS[] = "My first window";
@@ -33,6 +34,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	//wc.hCursor = LoadCursor(hInstance, MAKEINTRESOURCE(IDC_CURSOR1));
 	wc.hCursor = (HCURSOR)LoadImageA(hInstance, "Background.ani", IMAGE_CURSOR, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
 	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	//wc.hbrBackground = CreateSolidBrush(RGB(100, 100, 100));
 
 	wc.hInstance = hInstance;
 	wc.lpfnWndProc = (WNDPROC)WndProc;
@@ -100,8 +102,40 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			hwnd, (HMENU)(IDM_STATUSBAR), GetModuleHandle(NULL), NULL);
 		INT parts[2] = { 64, -1 };
 		SendMessage(hStatus, SB_SETPARTS, 2, (LPARAM)parts);
+
+		///////
+
+		CreateWindowEx(NULL, "Button", "Test", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 100, 100, 100, 100,
+			hwnd, (HMENU)IDC_ROUND_BUTTON, GetModuleHandle(NULL), NULL);
 	}
-	return TRUE;
+	break;
+	case WM_DRAWITEM:
+	{
+		CImage cimg;
+
+		cimg.Load("test.png");
+		HBITMAP bmp = cimg.Detach();
+		DRAWITEMSTRUCT* dwi = (DRAWITEMSTRUCT*)lParam;
+		HDC hdcImg = CreateCompatibleDC(dwi->hDC);
+		SelectObject(hdcImg, bmp);
+		BitBlt(dwi->hDC, 0, 0, 100, 100, hdcImg, 0, 0, SRCAND);
+		DeleteDC(hdcImg);
+		DeleteObject(bmp);
+
+		cimg.Load("mask.png");
+		HBITMAP mask = cimg.Detach();
+		HDC hdcMask = CreateCompatibleDC(dwi->hDC);
+		SelectObject(hdcMask, mask);
+		BitBlt(dwi->hDC, 0, 0, 100, 100, hdcMask, 0, 0, SRCPAINT);
+		DeleteDC(hdcMask);
+		DeleteObject(mask);
+
+		////////////////////////
+		////////////////////////
+		//SetWindowRgn(GetDlgItem(hwnd, IDC_ROUND_BUTTON), CreateEllipticRgn(0, 0, 100, 100), TRUE);
+		////////////////////////
+		////////////////////////
+	}
 	break;
 	case WM_MOUSELEAVE:
 		SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, FALSE, (LPARAM)&g_toolItem);
@@ -161,9 +195,15 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	case WM_COMMAND:
+	{
+		switch (LOWORD(wParam))
+		{
+		case IDC_ROUND_BUTTON: MessageBox(hwnd, "Была нажата кнопка", "Info", MB_OK | MB_ICONINFORMATION); break;
+		}
 		if (IsDlgButtonChecked(hwnd, IDC_CHECKBOX)) CheckDlgButton(hwnd, IDC_CHECKBOX, BST_UNCHECKED);
 		else CheckDlgButton(hwnd, IDC_CHECKBOX, BST_CHECKED);
-		break;
+	}
+	break;
 	case WM_DESTROY: PostQuitMessage(0); break;
 	case WM_CLOSE:
 		if (MessageBox(hwnd, "Вы действительно хотите выйти?", "Выход", MB_YESNO | MB_ICONINFORMATION) == IDYES) DestroyWindow(hwnd);

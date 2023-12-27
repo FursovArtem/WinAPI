@@ -13,7 +13,7 @@ CONST INT bgBlack[3] = { 0, 0, 0 };
 CONST INT bgWhite[3] = { 255, 255, 255 };
 CONST INT bgLightPurple[3] = { 0xE4, 0xA0, 0xF7 };
 CONST HFONT hfont = CreateFont(32, 14, 0, 0, FW_BLACK, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-	OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, "Digital-7");
+	OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH, "Digital-7");
 
 void SetTheme(HWND hwnd, LPCSTR name, CONST INT backgroundColor[3], CHAR currentExp[], CHAR currentOp[])
 {
@@ -30,9 +30,9 @@ void SetTheme(HWND hwnd, LPCSTR name, CONST INT backgroundColor[3], CHAR current
 	HANDLE hFind = FindFirstFile(pathfind, &data);
 	if (hFind != INVALID_HANDLE_VALUE)
 	{
-		HBRUSH brush = CreateSolidBrush(RGB(backgroundColor[0], backgroundColor[1], backgroundColor[2]));
-		SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
-		SendMessage(hwnd, WM_ERASEBKGND, (WPARAM)GetDC(hwnd), 0);
+		SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)CreateSolidBrush(RGB(backgroundColor[0], backgroundColor[1], backgroundColor[2])));
+		HDC hdc = GetDC(hwnd);
+		SendMessage(hwnd, WM_ERASEBKGND, (WPARAM)hdc, 0);
 		SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETFONT, (WPARAM)hfont, TRUE);
 		do
 		{
@@ -47,6 +47,7 @@ void SetTheme(HWND hwnd, LPCSTR name, CONST INT backgroundColor[3], CHAR current
 		SetCurrentDirectory(originalDir);
 		if (currentExp[0]) SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)currentExp);
 		else SendMessage(GetDlgItem(hwnd, IDC_EDIT), WM_SETTEXT, 0, (LPARAM)currentOp);
+		ReleaseDC(hwnd, hdc);
 		FindClose(hFind);
 	}
 }

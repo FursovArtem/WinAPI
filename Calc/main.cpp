@@ -140,6 +140,16 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		//SetWindowTheme(hwnd, L" ", L" ");
 	}
 	break;
+	/*case WM_CTLCOLOREDIT:
+	{
+		HDC hdc = (HDC)wParam;
+		SetBkMode(hdc, OPAQUE);
+		SetBkColor(hdc, RGB(0, 0, 100));
+		HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 255));
+		SetTextColor(hdc, RGB(255, 0, 0));
+		return (LRESULT)hBrush;
+	}
+	break;*/
 	case WM_CONTEXTMENU:
 	{
 		CHAR* currentTheme = g_sz_theme;
@@ -213,7 +223,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SendMessage(hEdit, WM_SETTEXT, 0, LPOP); break;
 			}
 			break;
-		case IDC_BUTTON_CLEAR:
+		case VK_ESCAPE: case IDC_BUTTON_CLEAR:
 			BEXP[0] = '\0';
 			OP[0] = '\0';
 			EXP[0] = '\0';
