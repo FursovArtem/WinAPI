@@ -2,16 +2,16 @@
 #include <atlimage.h>
 #pragma comment (lib, "gdi32");
 
-#define DEFAULT				"default"
-#define PURPLE				"purple"
+#define THEME_DEFAULT		"default"
+#define THEME_PURPLE		"purple"
 
-#define BG_BLACK			bgBlack
-#define BG_WHITE			bgWhite
-#define BG_LIGHTPURPLE		bgLightPurple
+#define BLACK				black
+#define WHITE				white
+#define LIGHTPURPLE			light_purple
 
-CONST INT bgBlack[3] = { 0, 0, 0 };
-CONST INT bgWhite[3] = { 255, 255, 255 };
-CONST INT bgLightPurple[3] = { 0xE4, 0xA0, 0xF7 };
+CONST INT black[3] = { 0, 0, 0 };
+CONST INT white[3] = { 255, 255, 255 };
+CONST INT light_purple[3] = { 0xE4, 0xA0, 0xF7 };
 CONST HFONT hfont = CreateFont(32, 14, 0, 0, FW_BLACK, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
 	OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH, "Digital-7");
 

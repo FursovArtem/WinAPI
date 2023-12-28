@@ -107,18 +107,18 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				CHAR sz_digit[2] = "";
 				sz_digit[0] = i + j + 49;
-				CreateWindowEx(NULL, "Button", sz_digit, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
+				CreateWindowEx(NULL, "Button", sz_digit, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 					g_i_BUTTON_START_X + (g_i_BUTTON_SIZE + g_i_INTERVAL) * j,
 					g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (3 - i / 3 - 1),
 					g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 					hwnd, (HMENU)(IDC_BUTTON_1 + i + j), GetModuleHandle(NULL), NULL);
 			}
 		}
-		CreateWindowEx(NULL, "Button", "0", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
+		CreateWindowEx(NULL, "Button", "0", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 			g_i_BUTTON_START_X, g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_DOUBLE_SIZE, g_i_BUTTON_SIZE,
 			hwnd, (HMENU)(IDC_BUTTON_0), GetModuleHandle(NULL), NULL);
-		CreateWindowEx(NULL, "Button", ".", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
+		CreateWindowEx(NULL, "Button", ".", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 			g_i_BUTTON_START_X + g_i_BUTTON_DOUBLE_SIZE + g_i_INTERVAL,
 			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -127,19 +127,25 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			for (int j = 0; j < 2; j++)
 			{
-				CreateWindowEx(NULL, "Button", g_sz_OPERATORS[i + j], WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
+				CreateWindowEx(NULL, "Button", g_sz_OPERATORS[i + j], WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 					g_i_BUTTON_START_X + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3 + (g_i_BUTTON_SIZE + g_i_INTERVAL) * j,
 					g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (4 - i / 2 - 1),
 					g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 					hwnd, (HMENU)(IDC_BUTTON_EQUAL + i + j), GetModuleHandle(NULL), NULL);
 			}
 		}
-		SetTheme(hwnd, DEFAULT, BG_BLACK, EXP, OP);
-		g_sz_theme = (CHAR*)DEFAULT;
-		g_sz_bg = (INT*)BG_BLACK;
+		SetTheme(hwnd, THEME_DEFAULT, BLACK, EXP, OP);
+		g_sz_theme = (CHAR*)THEME_DEFAULT;
+		g_sz_bg = (INT*)BLACK;
 		//SetWindowTheme(hwnd, L" ", L" ");
 	}
 	break;
+	case WM_DRAWITEM:
+	{
+		INT id = wParam;
+		DRAWITEMSTRUCT* item = (DRAWITEMSTRUCT*)lParam;
+	}
+		break;
 	/*case WM_CTLCOLOREDIT:
 	{
 		HDC hdc = (HDC)wParam;
@@ -164,12 +170,12 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (TrackPopupMenuEx(hMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN | TPM_RETURNCMD, LOWORD(lParam), HIWORD(lParam), hwnd, NULL))
 		{
 		case CM_DEFAULT:
-			g_sz_theme = (CHAR*)DEFAULT;
-			g_sz_bg = (INT*)BG_BLACK;
+			g_sz_theme = (CHAR*)THEME_DEFAULT;
+			g_sz_bg = (INT*)BLACK;
 			break;
 		case CM_PURPLE:
-			g_sz_theme = (CHAR*)PURPLE;
-			g_sz_bg = (INT*)BG_LIGHTPURPLE;
+			g_sz_theme = (CHAR*)THEME_PURPLE;
+			g_sz_bg = (INT*)LIGHTPURPLE;
 			break;
 		case CM_CLOSE: DestroyWindow(hwnd); break;
 		}
@@ -275,12 +281,12 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (g_sz_theme == "default")
 			{
-				SetTheme(hwnd, PURPLE, BG_LIGHTPURPLE, EXP, OP);
+				SetTheme(hwnd, THEME_PURPLE, LIGHTPURPLE, EXP, OP);
 				g_sz_theme = (CHAR*)"purple";
 			}
 			else
 			{
-				SetTheme(hwnd, DEFAULT, BG_BLACK, EXP, OP);
+				SetTheme(hwnd, THEME_DEFAULT, BLACK, EXP, OP);
 				g_sz_theme = (CHAR*)"default";
 			}
 		}
