@@ -34,7 +34,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	//wc.hCursor = LoadCursor(hInstance, MAKEINTRESOURCE(IDC_CURSOR1));
 	wc.hCursor = (HCURSOR)LoadImageA(hInstance, "Background.ani", IMAGE_CURSOR, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
 	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	//wc.hbrBackground = CreateSolidBrush(RGB(100, 100, 100));
+	wc.hbrBackground = CreateSolidBrush(RGB(0, 0xC8, 0xC8));
 
 	wc.hInstance = hInstance;
 	wc.lpfnWndProc = (WNDPROC)WndProc;
@@ -89,6 +89,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	static DRAWITEMSTRUCT* dwi;
 	switch (uMsg)
 	{
 	case WM_CREATE:
@@ -105,36 +106,58 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		///////
 
-		CreateWindowEx(NULL, "Button", "Test", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 100, 100, 100, 100,
-			hwnd, (HMENU)IDC_ROUND_BUTTON, GetModuleHandle(NULL), NULL);
+		CreateWindowEx(NULL, "Button", "Round", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 100, 100, 100, 100, hwnd, (HMENU)IDC_ROUND_BUTTON, GetModuleHandle(NULL), NULL);
+		CreateWindowEx(NULL, "Button", "Test", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 300, 300, 100, 100, hwnd, (HMENU)IDC_TEST_BUTTON, GetModuleHandle(NULL), NULL);
 	}
 	break;
 	case WM_DRAWITEM:
 	{
+		dwi = (DRAWITEMSTRUCT*)lParam;
 		CImage cimg;
+		switch (dwi->CtlID)
+		{
+		case IDC_ROUND_BUTTON:
+		{
+			/*cimg.Load("mask.png");
+			HBITMAP mask = cimg.Detach();
+			HDC hdcMask = CreateCompatibleDC(dwi->hDC);
+			SelectObject(hdcMask, mask);
+			BitBlt(dwi->hDC, 0, 0, 100, 100, hdcMask, 0, 0, SRCPAINT);*/
+			cimg.Load("test.png");
+			HBITMAP bmp = cimg.Detach();
+			HDC hdcImg = CreateCompatibleDC(dwi->hDC);
+			SelectObject(hdcImg, bmp);
+			BitBlt(dwi->hDC, 0, 0, 100, 100, hdcImg, 0, 0, SRCAND);
+			//DeleteDC(hdcMask);
+			//DeleteObject(mask);
+			DeleteDC(hdcImg);
+			DeleteObject(bmp);
 
-		cimg.Load("test.png");
-		HBITMAP bmp = cimg.Detach();
-		DRAWITEMSTRUCT* dwi = (DRAWITEMSTRUCT*)lParam;
-		HDC hdcImg = CreateCompatibleDC(dwi->hDC);
-		SelectObject(hdcImg, bmp);
-		BitBlt(dwi->hDC, 0, 0, 100, 100, hdcImg, 0, 0, SRCAND);
-		DeleteDC(hdcImg);
-		DeleteObject(bmp);
-
-		cimg.Load("mask.png");
-		HBITMAP mask = cimg.Detach();
-		HDC hdcMask = CreateCompatibleDC(dwi->hDC);
-		SelectObject(hdcMask, mask);
-		BitBlt(dwi->hDC, 0, 0, 100, 100, hdcMask, 0, 0, SRCPAINT);
-		DeleteDC(hdcMask);
-		DeleteObject(mask);
-
-		////////////////////////
-		////////////////////////
-		//SetWindowRgn(GetDlgItem(hwnd, IDC_ROUND_BUTTON), CreateEllipticRgn(0, 0, 100, 100), TRUE);
-		////////////////////////
-		////////////////////////
+			SetWindowRgn(GetDlgItem(hwnd, IDC_ROUND_BUTTON), CreateEllipticRgn(0, 0, 101, 101), TRUE);
+		}
+		break;
+		case IDC_TEST_BUTTON:
+		{
+			POINT pts[] =
+			{
+				{50, 17}, {51, 17},																	//top-center
+				{65, 10}, {78, 10}, {80, 11}, {82, 12}, {84, 13}, {86, 14}, {88, 15}, {90, 16},		//top-right
+				{99, 32}, {98, 46}, {97, 49}, {96, 53},	{95, 55},									//right
+				{52, 89}, {49, 89},																	//bottom-center
+				{5, 55}, {4, 53}, {3, 49}, {2, 46}, {1, 32},										//left
+				{10, 16}, {12, 15}, {14, 14}, {16, 13}, {18, 12}, {20, 11}, {25, 10}, {37, 10}		//top-left
+			};
+			SetWindowRgn(GetDlgItem(hwnd, IDC_TEST_BUTTON), CreatePolygonRgn(pts, 30, WINDING), TRUE);
+			cimg.Load("heart.png");
+			HBITMAP bmp = cimg.Detach();
+			HDC hdcImg = CreateCompatibleDC(dwi->hDC);
+			SelectObject(hdcImg, bmp);
+			BitBlt(dwi->hDC, 0, 0, 100, 100, hdcImg, 0, 0, SRCAND);
+			DeleteDC(hdcImg);
+			DeleteObject(bmp);
+		}
+		break;
+		}
 	}
 	break;
 	case WM_MOUSELEAVE:
@@ -198,10 +221,17 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (LOWORD(wParam))
 		{
-		case IDC_ROUND_BUTTON: MessageBox(hwnd, "Была нажата кнопка", "Info", MB_OK | MB_ICONINFORMATION); break;
+		case IDC_TEST_BUTTON:
+		case IDC_ROUND_BUTTON:
+		{
+			LONG_PTR lptr = GetWindowLongPtr(GetDlgItem(hwnd, IDC_ROUND_BUTTON), GWL_STYLE);
+			MessageBox(hwnd, "Была нажата кнопка", "Info", MB_OK | MB_ICONINFORMATION);
 		}
-		if (IsDlgButtonChecked(hwnd, IDC_CHECKBOX)) CheckDlgButton(hwnd, IDC_CHECKBOX, BST_UNCHECKED);
-		else CheckDlgButton(hwnd, IDC_CHECKBOX, BST_CHECKED);
+		break;
+		case IDC_CHECKBOX:
+			if (IsDlgButtonChecked(hwnd, IDC_CHECKBOX)) CheckDlgButton(hwnd, IDC_CHECKBOX, BST_UNCHECKED);
+			else CheckDlgButton(hwnd, IDC_CHECKBOX, BST_CHECKED); break;
+		}
 	}
 	break;
 	case WM_DESTROY: PostQuitMessage(0); break;

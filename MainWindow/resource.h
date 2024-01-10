@@ -7,6 +7,7 @@
 #define IDC_CHECKBOX					1001
 #define IDM_STATUSBAR					1002
 #define IDC_ROUND_BUTTON				1003
+#define IDC_TEST_BUTTON					1004
 
 // Next default values for new objects
 // 
